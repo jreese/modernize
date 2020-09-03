@@ -1,0 +1,41 @@
+name: Build
+on:
+  push:
+    branches:
+      - master
+      - main
+    tags:
+      - v*
+  pull_request:
+
+jobs:
+  modernize:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macOS-latest, ubuntu-latest, windows-latest]
+        include:
+          - python-version: 3.6
+            env:
+              TOXENV: py36,lint,coveralls
+          - python-version: 3.7
+            env:
+              TOXENV: py37,lint,coveralls
+          - python-version: 3.8
+            env:
+              TOXENV: py38,lint,coveralls
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Set Up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: |
+          nvm install 14
+          pip install tox
+      - name: Test
+        run: tox
